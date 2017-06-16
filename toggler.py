@@ -15,12 +15,23 @@ def get_workspace_name_by_id(obj_id):
 
 
 def get_project_info_by_id(obj_id):
-    resp = do_get_request_w_id(configs['project_service'], obj_id)
-    return resp['data']['name'], response['data']['cid']
+    name = ''
+    cid = None
+    if obj_id:
+        resp = do_get_request_w_id(configs['project_service'], obj_id)
+        if 'data' in resp:
+            if 'name' in resp['data']:
+                name = resp['data']['name']
+            if 'cid' in resp['data']:
+                cid = resp['data']['cid']
+    return name, cid
 
 
 def get_client_name_by_id(obj_id):
-    return do_get_request_w_id(configs['client_service'], obj_id)['data']['name']
+    resp = None
+    if obj_id:
+        resp = do_get_request_w_id(configs['client_service'], obj_id)['data']['name']
+    return resp
 
 
 def convert_to_bridge_format(duration_sec):
@@ -57,12 +68,17 @@ response = json.loads(urllib2.urlopen(request).read())
 timesheet = []
 
 for entry in response:
-
-    if entry['tags']:
+    if 'tags' not in entry:
+        tags = "ERROR_NO_TAGS"
+    else:
         tags = entry['tags']
 
     wid = entry['wid']
-    pid = entry['pid']
+
+    if 'pid' in entry:
+        pid = int(entry['pid'])
+    else:
+        pid = None
     duration = entry['duration']
     description = entry['description']
     workspace = get_workspace_name_by_id(wid)
