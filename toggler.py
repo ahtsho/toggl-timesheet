@@ -1,6 +1,7 @@
-import urllib, urllib2, json
+import urllib, urllib2, json, sys
 from dateutil.parser import parse
 from datetime import timedelta
+from timesheet import TimesheetEntry
 
 api = json.loads(open('config/toggl.api.json', 'r').read())
 authHeader = open('config/api.key', 'r').read().strip() + ":" + "api_token"
@@ -18,15 +19,14 @@ def get_workspace_name_by_id(obj_id):
 
 
 def get_project_info_by_id(obj_id):
-    name = ''
+    name = None
     cid = None
     if obj_id:
         resp = do_get_request_w_id(api['services']['p'], obj_id)
-        if 'data' in resp:
-            if 'name' in resp['data']:
-                name = resp['data']['name']
-            if 'cid' in resp['data']:
-                cid = resp['data']['cid']
+        data = get_value_if_key_exists('data', resp)
+        if data:
+            name = get_value_if_key_exists('name', data)
+            cid = get_value_if_key_exists('cid', data)
     return name, cid
 
 
@@ -62,6 +62,7 @@ def get_value_if_key_exists(akey, amap):
         value = amap[akey]
     return value
 
+
 def get_timesheet_entries(date='09/09/2016'):
     start_date = parse(date)
     end_date = start_date + timedelta(hours=23, minutes = 59)
@@ -75,30 +76,27 @@ def get_timesheet_entries(date='09/09/2016'):
         headers={"Authorization": authHeader})
 
     response = json.loads(urllib2.urlopen(request).read())
-
-    timesheet = []
+    ts = []
 
     for entry in response:
-        tags = get_value_if_key_exists('tags', entry)
-        wid = get_value_if_key_exists('wid', entry)
-        pid = get_value_if_key_exists('pid', entry)
-        duration = get_value_if_key_exists('duration', entry)
-        description = get_value_if_key_exists('description', entry)
+        project, cid = get_project_info_by_id(get_value_if_key_exists('pid', entry))
+        hours = convert_to_bridge_format(get_value_if_key_exists('duration', entry))
+        timesheet_entry =  TimesheetEntry(parse(params['start_date']).strftime("%d/%m/%Y"),
+                                          get_value_if_key_exists('tags', entry),
+                                          get_client_name_by_id(cid),
+                                          get_workspace_name_by_id(get_value_if_key_exists('wid', entry)),
+                                          project,
+                                          get_value_if_key_exists('description', entry),
+                                          hours)
+        TimesheetEntry.increment_tot_day_hours(hours.replace(",","."))
+        ts.append(timesheet_entry)
 
-        workspace = get_workspace_name_by_id(wid)
-        project, cid = get_project_info_by_id(pid)
-        client = get_client_name_by_id(cid)
-        timesheet_entry = {'date': parse(params['start_date']).strftime("%d/%m/%Y"),
-                           'activity': tags,
-                           'company': client,
-                           'job_order': workspace,
-                           'sub_job_order': project,
-                           'description': description,
-                           'numberOfHours': convert_to_bridge_format(duration)}
-        timesheet.append(timesheet_entry)
-
-    return timesheet
+    return ts
 
 date_in = str(raw_input("Which day would you like to submit. Use format dd/mm/yyyy\n"))
-print date_in
-print get_timesheet_entries(str(date_in))
+
+ts_entries = get_timesheet_entries(str(date_in))
+
+for ts in ts_entries:
+    print ts.to_string()
+print TimesheetEntry.get_tot_day_hours()
