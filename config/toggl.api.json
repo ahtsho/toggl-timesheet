@@ -1,0 +1,10 @@
+{
+  "base_url":"https://www.toggl.com/api/v8/",
+  "services":{
+    "t_e":"time_entries",
+    "w":"workspaces",
+    "p":"projects",
+    "c":"clients",
+    "t":"tags"
+  }
+}

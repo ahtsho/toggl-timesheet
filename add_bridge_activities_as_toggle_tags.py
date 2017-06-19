@@ -1,7 +1,7 @@
 import urllib2, json
 
-configs = json.loads(open('app.cfg', 'r').read())
-authHeader = configs['API_KEY'] + ":" + "api_token"
+api = json.loads(open('config/toggl.api.json', 'r').read())
+authHeader = open('config/api.key', 'r').read().strip() + ":" + "api_token"
 authHeader = "Basic %s" % authHeader.encode("base64").rstrip()
 
 
@@ -12,7 +12,7 @@ def read_file_as_list(filename):
 
 
 def get_workspace_ids():
-    workspaces_url = configs['time_tracker_url']+'workspaces'
+    workspaces_url = api['base_url'] + api['services']['w']
     request = urllib2.Request(workspaces_url,headers={"Authorization": authHeader})
     response = urllib2.urlopen(request)
     workspaces = json.loads(response.read())
@@ -25,10 +25,10 @@ def get_workspace_ids():
 def add_tags_to_workspace(wid, tags_file):
     tags = read_file_as_list(tags_file)
 
-    tags_url = configs['time_tracker_url']+'tags'
+    tags_url = api['base_url'] + api['services']['t']
 
     for tag in tags:
-        tag_data = {'tag':{'name':tag,'wid':wid}}
+        tag_data = {'tag': {'name':tag,'wid':wid}}
         request = urllib2.Request(tags_url,json.dumps(tag_data),headers={"Authorization": authHeader,'Content-Type': 'application/json'})
         try:
             response = urllib2.urlopen(request)
@@ -38,5 +38,5 @@ def add_tags_to_workspace(wid, tags_file):
 
 
 wids = get_workspace_ids()
-for id in wids:
-    add_tags_to_workspace(id, 'test_tags.txt')
+for wid in wids:
+    add_tags_to_workspace(wid, 'test_tags.txt')

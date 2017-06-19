@@ -1,24 +1,26 @@
 import urllib, urllib2, json
 from dateutil.parser import parse
 
-configs = json.loads(open('app.cfg', 'r').read())
+api = json.loads(open('config/toggl.api.json', 'r').read())
+authHeader = open('config/api.key', 'r').read().strip() + ":" + "api_token"
+authHeader = "Basic %s" % authHeader.encode("base64").rstrip()
 
 
 def do_get_request_w_id(service, obj_id):
-    req = urllib2.Request(configs['time_tracker_url'] + service + '/' + str(obj_id),
+    req = urllib2.Request(api['base_url'] + service + '/' + str(obj_id),
                           headers={"Authorization": authHeader})
     return json.loads(urllib2.urlopen(req).read())
 
 
 def get_workspace_name_by_id(obj_id):
-    return do_get_request_w_id(configs['workspace_service'], obj_id)['data']['name']
+    return do_get_request_w_id(api['services']['w'], obj_id)['data']['name']
 
 
 def get_project_info_by_id(obj_id):
     name = ''
     cid = None
     if obj_id:
-        resp = do_get_request_w_id(configs['project_service'], obj_id)
+        resp = do_get_request_w_id(api['services']['p'], obj_id)
         if 'data' in resp:
             if 'name' in resp['data']:
                 name = resp['data']['name']
@@ -30,7 +32,7 @@ def get_project_info_by_id(obj_id):
 def get_client_name_by_id(obj_id):
     resp = None
     if obj_id:
-        resp = do_get_request_w_id(configs['client_service'], obj_id)['data']['name']
+        resp = do_get_request_w_id(api['services']['c'], obj_id)['data']['name']
     return resp
 
 
@@ -53,14 +55,13 @@ def convert_to_quarters(minutes):
     return m
 
 
-configs = json.loads(open('app.cfg', 'r').read())
-authHeader = configs['API_KEY'] + ":" + "api_token"
-authHeader = "Basic %s" % authHeader.encode("base64").rstrip()
+
+
 
 params = {'start_date': '2017-06-01T07:00:00+00:00', 'end_date': '2017-06-01T20:00:00+00:00'}
 
 request = urllib2.Request(
-    configs['time_tracker_url'] + configs['time_entries_service'] + '?%s' % urllib.urlencode(params),
+    api['base_url'] + api['services']['t_e'] + '?%s' % urllib.urlencode(params),
     headers={"Authorization": authHeader})
 
 response = json.loads(urllib2.urlopen(request).read())
