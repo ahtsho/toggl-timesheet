@@ -25,3 +25,9 @@ def get_value_if_key_exists(akey, amap):
     if akey in amap:
         value = amap[akey]
     return value
+
+
+def read_file_as_list(filename):
+    with open(filename) as data_file:
+        data_list = data_file.readlines()
+    return [x.strip() for x in data_list]
