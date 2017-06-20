@@ -1,4 +1,4 @@
-__author__ = 'ahadu_tsegaye'
+__author__ = 'Ahadu Tsegaye Abebe - 20/06/17'
 
 import json,urllib2,urllib
 import utils

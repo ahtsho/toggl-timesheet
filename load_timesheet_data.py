@@ -1,9 +1,9 @@
-__author__ = 'ahadu_tsegaye'
+__author__ = 'Ahadu Tsegaye Abebe - 20/06/17'
 
+import utils
 from dateutil.parser import parse
 from datetime import timedelta
 from timesheet import TimesheetEntry
-import utils
 from toggl_connector import TConnector
 
 

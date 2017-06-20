@@ -1,6 +1,7 @@
-__author__ = 'ahadu_tsegaye'
+__author__ = 'Ahadu Tsegaye Abebe - 20/06/17'
 
-from load_timesheet_data import TConnector
+
+from toggl_connector import TConnector
 import utils
 
 wids = TConnector.get_workspace_ids()

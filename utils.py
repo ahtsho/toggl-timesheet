@@ -1,4 +1,4 @@
-__author__ = 'ahadu_tsegaye'
+__author__ = 'Ahadu Tsegaye Abebe - 20/06/17'
 
 
 def convert_seconds_to_sexagesimals(duration_sec):
